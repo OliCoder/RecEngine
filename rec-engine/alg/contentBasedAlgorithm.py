@@ -4,6 +4,7 @@ import sys
 sys.path.append("../")
 from utils import EngineUtils, DataSet
 from operator import add
+from engine.ttypes import UserProfile
 from pyspark.sql import Row
 
 class ContentBasedAlgorithm(object):
@@ -12,7 +13,7 @@ class ContentBasedAlgorithm(object):
         self.simPatch = 10
 
     def Predict(self, userId, movieId):
-        sqlCtx = EngineUtils.getSqlContext()
+        sqlCtx = EngineUtils().getSqlContext()
         ratingsDataFrame = DataSet().getRatingsDataFrame()
         movieWatchedDataFrame = ratingsDataFrame.where(ratingsDataFrame.userId ==userId).select("*")
 
@@ -29,14 +30,16 @@ class ContentBasedAlgorithm(object):
         result = 0.0
         for i in range(len(simList)):
             if simList[i]["movie2"] != movieId:
-                result += simList["movie2"]["sim"] / simScore * simList["movie2"]["rating"]
+                result += simList[i]["sim"] / simScore * simList[i]["rating"]
 
         return result
 
-    def Recommend(self, userId, movieNumRecently, topk=10):
+    def Recommend(self, userProfile, movieWatchedNumRecently, topk=10):
+        userId = userProfile.userId
+        movieWatchedNumRecently = userProfile.movieWatchedNumRecently
         ratingsDataFrame = DataSet().getRatingsDataFrame()
         movieWatchedRecentlyDataFrame = ratingsDataFrame.orderBy("timestamp", ascending=0).where( \
-            ratingsDataFrame.userId == userId).limit(movieNumRecently).select("movieId", "rating")
+            ratingsDataFrame.userId == userId).limit(movieWatchedNumRecently).select("movieId", "rating")
         contentsSimDataFrame = DataSet().getContentsSimDataFrame()
         contenesSimFilteredDataFrame = contentsSimDataFrame.where(contentsSimDataFrame.sim > self.simThreshold).select("*")
         simMovieDataFrame = movieWatchedRecentlyDataFrame.join(contenesSimFilteredDataFrame, movieWatchedRecentlyDataFrame.movieId == contenesSimFilteredDataFrame.movie1, \

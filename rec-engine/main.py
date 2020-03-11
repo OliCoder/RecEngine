@@ -6,17 +6,21 @@ from thrift.protocol import TBinaryProtocol
 from thrift.server import TServer
 from thrift.transport import TSocket, TTransport
 
+from manager import EngineManager
 from engine import EngineService
-from .utils.utils import EngineUtils
+from utils import EngineUtils
 
 
 class EngineServiceHandler(object):
     def UpdateEngineGroup(self, groupConf):
         logging.info("Start update engine group.")
+        return EngineManager().Update(groupConf)
 
-        logging.info("Start parse json conf.")
+    def Predict(self, userProfile, movieId):
+        EngineManager().Predict(userProfile, movieId)
 
-        return True
+    def Recommend(self, userProfile, topk):
+        EngineManager().Recommend(userProfile, topk)
 
 if __name__ == "__main__":
     config = EngineUtils().getConfigParser()

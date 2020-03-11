@@ -244,7 +244,7 @@ class DataSet(object):
         ratingMatrixDataFrame = sqlCtx.createDataFrame(data.map(lambda line: Row(row=line)))
         self.saveAsParquet(ratingMatrixDataFrame, "./dataset/rating_matrix")
         return ratingMatrixDataFrame
-
+    
 
 if __name__ == "__main__":
     # DataSet().loadAndSaveMovieData()

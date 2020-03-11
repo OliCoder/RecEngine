@@ -1,0 +1,1 @@
+{"models":[{"name":"ALS","params":{"maxIter":10,"regParam":0.01,"implicitPrefs":false,"weight":0.5}},{"name":"CONTENT","params":{"simThreshold":0.8,"simPatch":10,"weight":0.3}},{"name":"POPU","params":{"antiSimThreshold":0.4,"simPatch":10,"weight":0.2}}]}

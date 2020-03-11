@@ -5,6 +5,7 @@ sys.path.append("../")
 from utils import EngineUtils, DataSet
 from operator import add
 from pyspark.sql import Row
+from engine.ttypes import UserProfile
 
 class PopuBasedAlgorithm(object):
     def __init__(self, antiSimThreshold=0.4, simPatch=10):
@@ -36,7 +37,8 @@ class PopuBasedAlgorithm(object):
         return result
 
 
-    def Recommend(self, userId, topk):
+    def Recommend(self, userProfile, topk=10):
+        userId = userProfile.userId
         sqlCtx = EngineUtils().getSqlContext()
         usersAntiSimDataFrame = DataSet().getUsersAntiSimDataFrame()
         simUserDataFrame = usersAntiSimDataFrame.where(usersAntiSimDataFrame.user1 == userId).where( \
