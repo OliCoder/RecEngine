@@ -17,10 +17,10 @@ class EngineServiceHandler(object):
         return EngineManager().Update(groupConf)
 
     def Predict(self, userProfile, movieId):
-        EngineManager().Predict(userProfile, movieId)
+        return EngineManager().Predict(userProfile, movieId)
 
     def Recommend(self, userProfile, topk):
-        EngineManager().Recommend(userProfile, topk)
+        return EngineManager().Recommend(userProfile, topk)
 
 if __name__ == "__main__":
     config = EngineUtils().getConfigParser()
