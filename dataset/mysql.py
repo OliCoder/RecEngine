@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from sqlalchemy import create_engine, Table, Column, Integer, BigInteger, Float, String, MetaData, ForeignKey
+from sqlalchemy import create_engine, Table, Column, Integer, Boolean, BigInteger, Float, String, MetaData, ForeignKey, func
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
@@ -30,6 +30,19 @@ class Rating(Base):
     rating = Column("rating", Integer)
     timestamp = Column("timestamp", BigInteger)
 
+class Auth(Base):
+    __tablename__ = "auths"
+    userid = Column("userid", Integer, primary_key=True)
+    username = Column("username", String(20))
+    password = Column("password", String(20))
+
+class Claim(Base):
+    __tablename__ = "claims"
+    idx = Column("idx", Integer, primary_key=True)
+    userid = Column("userid", Integer)
+    level = Column("level", Integer)
+    isadmin = Column("isadmin", Boolean)
+
 def readDat(filePath):
     data = []
     with open(filePath) as file:
@@ -38,33 +51,26 @@ def readDat(filePath):
             data.append(line)
     return data
 
-def createTable():
+def InitAuthDB():
     engine = create_engine("mysql+pymysql://root:123456@localhost:3306/recsys", echo=True)
-    meta = MetaData(engine)
-    tMovie = Table("movies", meta,
-                   Column("movieid", Integer, primary_key=True),
-                   Column("title", String(100)),
-                   Column("genre", String(60)),
-                   Column("avgrating", Float))
-    tUser = Table("users", meta,
-                  Column("userid", Integer, primary_key=True),
-                  Column("name", String(20)),
-                  Column("age", Integer),
-                  Column("gender", String(2)),
-                  Column("occupation", Integer),
-                  Column("zipcode", String(20)))
+    session = sessionmaker(bind=engine)()
+    Base.metadata.create_all(engine)
+    auth = Auth(userid=1, username="user1", password="123456")
+    session.add(auth)
+    session.commit()
 
-    tRating = Table("ratings", meta,
-                    Column("userid", Integer),
-                    Column("movieid", Integer),
-                    Column("rating", Integer),
-                    Column("timestamp", BigInteger))
-    meta.create_all()
+def InitClaimsDB():
+    engine = create_engine("mysql+pymysql://root:123456@localhost:3306/recsys", echo=True)
+    session = sessionmaker(bind=engine)()
+    Base.metadata.create_all(engine)
+    claim = Claim(userid=1, level=5, isadmin=True)
+    session.add(claim)
+    session.commit()
 
 def movieToDB():
     movies = readDat("./movies.dat")
-
     engine = create_engine("mysql+pymysql://root:123456@localhost:3306/recsys", echo=True)
+    Base.metadata.create_all(engine)
     session = sessionmaker(bind=engine)()
     for item in movies:
         movie = Movie(movieid=item[0], title=item[1], genre=item[2], avgrating=0)
@@ -94,5 +100,11 @@ def ratingToDB():
         i += 1
     session.commit()
 
+    result = session.query(Rating.movieid, func.avg(Rating.rating)).group_by(Rating.movieid).all()
+    for item in result:
+        session.query(Movie).filter(Movie.movieid == item[0]).update({"avgrating": item[1]})
+    session.commit()
+
 if __name__ == "__main__":
-    ratingToDB()
+    InitAuthDB()
+    InitClaimsDB()
