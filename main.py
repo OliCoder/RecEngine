@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
+import os
 
 from thrift.protocol import TBinaryProtocol
 from thrift.server import TServer
@@ -12,6 +13,9 @@ from utils import EngineUtils
 
 
 class EngineServiceHandler(object):
+    def Ping(self):
+        return "Pong"
+
     def UpdateEngineGroup(self, groupConf):
         logging.info("Start update engine group.")
         return EngineManager().Update(groupConf)
@@ -28,6 +32,10 @@ if __name__ == "__main__":
     HOST = config.get("server", "host")
     PORT = config.get("server", "port")
     dst = config.get("log", "destination")
+    if not os.path.exists(dst):
+        index = dst.rfind("/", 0, len(dst))
+        if index != -1:
+            os.makedirs(dst[:index])
 
     if config.get("server", "dev") == "release":
         logging.basicConfig(filename=dst, level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")

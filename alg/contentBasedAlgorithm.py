@@ -34,7 +34,7 @@ class ContentBasedAlgorithm(object):
 
         return result
 
-    def Recommend(self, userProfile, movieWatchedNumRecently, topk=10):
+    def Recommend(self, userProfile, topk=10):
         userId = userProfile.userId
         movieWatchedNumRecently = userProfile.movieWatchedNumRecently
         ratingsDataFrame = DataSet().getRatingsDataFrame()

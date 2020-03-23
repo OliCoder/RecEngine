@@ -26,7 +26,7 @@ class EngineUtils(object):
         self.sqlCtx = SQLContext(self.sc)
         self.config = configparser.ConfigParser()
         try:
-            self.config.read("../conf/engine.ini")
+            self.config.read("conf/engine.ini")
         except Exception as e:
             logging.fatal(e)
             os._exit(-1)
