@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import sys
+import json
 sys.path.append("./")
 from utils import EngineUtils
 from engine.ttypes import UserProfile
@@ -26,8 +27,14 @@ def TEST_POPU():
     print(alg.Predict(user, 1))
     print(alg.Recommend(user))
 
+def TEST_PARSER_JSON():
+    with open("conf/defaultEngineGroup.json") as file:
+        obj = json.load(file)
+        print(obj)
+
 if __name__ == "__main__":
-    EngineUtils().getSparkContext().setLogLevel("ERROR")
-    TEST_ALS()
-    TEST_CONTENT()
-    TEST_POPU()
+    # EngineUtils().getSparkContext().setLogLevel("ERROR")
+    # TEST_ALS()
+    # TEST_CONTENT()
+    # TEST_POPU()
+    TEST_PARSER_JSON()

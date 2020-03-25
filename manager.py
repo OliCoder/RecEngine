@@ -21,17 +21,18 @@ class EngineManager(object):
         self.models = []
         if len(jsonContent) == 0:
             logging.error("Json content is empty, use default config")
-            with open("../conf/defaultEngineGroup.json", "r") as file:
+            with open("conf/defaultEngineGroup.json", "r") as file:
                 Obj = json.load(file)
-        try:
-            Obj = json.loads(jsonContent)
-            if len(Obj["models"]) == 0:
-                logging.error("Json content is empty, use default config")
-                with open("../conf/defaultEngineGroup.json", "r") as file:
-                    Obj = json.load(file)
-        except Exception as e:
-            logging.error("Parser json failed, exception: %s", str(e))
-            return False
+        else:
+            try:
+                Obj = json.loads(jsonContent)
+                if len(Obj["models"]) == 0:
+                    logging.error("Json content is empty, use default config")
+                    with open("conf/defaultEngineGroup.json", "r") as file:
+                        Obj = json.load(file)
+            except Exception as e:
+                logging.error("Parser json failed, exception: %s", str(e))
+                return False
 
         for model in Obj["models"]:
             params = model["params"]
@@ -67,9 +68,11 @@ class EngineManager(object):
         return score
 
     def Recommend(self, userProfile, topk):
+        print(userProfile, topk)
         movies = []
         for item in self.models:
-            movies.extend(item[0].Recommend(userProfile, math.ceil(topk * item[1])))
+            tmpMovie,  tmpScore = item[0].Recommend(userProfile, math.ceil(topk * item[1]))
+            movies.extend(tmpMovie)
         if len(movies) > topk:
             random.shuffle(movies)
         return movies[:topk]
