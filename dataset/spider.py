@@ -41,13 +41,13 @@ def main_multi_thread():
 
 def main():
     linksDataFrane = pd.read_csv("./links.csv", dtype=str)
-    for index, item in tqdm(linksDataFrane.iterrows()):
+    for index, item in linksDataFrane.iterrows():
         if int(item[0]) > 3952:
             break
+        print(str(index) + "/3952")
         baseUrl = "https://www.imdb.com/title/tt0"
         imdbId = str(item[1])
         url = baseUrl + imdbId + '/'
-        # rsp = requests.get(url, proxies={'http': 'http://localhost:12333', 'https': 'http://localhost:12333'}).text
         rsp = requests.get(url).text
         doc = pq(rsp)
         imgUrl = doc('.poster a img').attr.src
@@ -55,10 +55,28 @@ def main():
             file.write(imdbId + "\n")
         else:
             file.write(imdbId + " " + imgUrl + '\n')
-        if index == 3:
-            break
     file.close()
 
+def downloadImg(movieId, url):
+	rsp = requests.get(url)
+	img = rsp.content
+	path = "./pic/" + str(movieId) + ".jpg"
+	with open(path, "wb+") as f:
+		f.write(img)
 
 if __name__ == "__main__":
-    main()
+    # main()
+	linksDataFrane = pd.read_csv("./links.csv", dtype=str)
+	movieIds = list(linksDataFrane["movieId"])
+	imdbIds = list(linksDataFrane["imdbId"])
+	moviesMap = {}
+	for i in range(len(imdbIds)):
+		moviesMap[int(imdbIds[i])] = movieIds[i]
+
+	with open("./imgs-source") as f:
+		for line in f:
+			line = line.strip("\n").split()
+			if int(moviesMap[int(line[0])]) <=3068:
+				continue
+			if len(line) == 2:
+				downloadImg(moviesMap[int(line[0])], line[1])
