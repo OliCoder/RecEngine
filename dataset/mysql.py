@@ -3,6 +3,7 @@
 from sqlalchemy import create_engine, Table, Column, Integer, Boolean, BigInteger, Float, String, MetaData, ForeignKey, func
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+import pandas as pd
 
 Base = declarative_base()
 
@@ -21,6 +22,7 @@ class Movie(Base):
     title = Column("title", String(100))
     genre = Column("genre", String(60))
     avgrating = Column("avgrating", Float)
+    img = Column("img", String(200))
 
 class Rating(Base):
     __tablename__ = "ratings"
@@ -105,6 +107,27 @@ def ratingToDB():
         session.query(Movie).filter(Movie.movieid == item[0]).update({"avgrating": item[1]})
     session.commit()
 
+def addMovieImg():
+    engine = create_engine("mysql+pymysql://root:123456@localhost:3306/recsys", echo=True)
+    session = sessionmaker(bind=engine)()
+    linksDataFrane = pd.read_csv("./links.csv", dtype=str)
+    movieIds = list(linksDataFrane["movieId"])
+    imdbIds = list(linksDataFrane["imdbId"])
+    moviesMap = {}
+    for i in range(len(imdbIds)):
+        moviesMap[int(imdbIds[i])] = movieIds[i]
+
+    with open("imgs-source") as file:
+        for line in file:
+            line = line.strip("\n").split()
+            if len(line) != 2:
+                continue
+            id = int(moviesMap[int(line[0])])
+            result = session.query(Movie).filter_by(movieid = id).first()
+            result.img = line[1]
+            session.commit()
+
 if __name__ == "__main__":
-    InitAuthDB()
-    InitClaimsDB()
+    # InitAuthDB()
+    # InitClaimsDB()
+    addMovieImg()

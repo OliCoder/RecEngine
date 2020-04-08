@@ -10,6 +10,7 @@ from thrift.transport import TSocket, TTransport
 from manager import EngineManager
 from engine import EngineService
 from utils import EngineUtils
+from alg.alternatingLeastSquareAlgorithm import AlternatingLeastSquareAlgorithm
 
 
 class EngineServiceHandler(object):
@@ -26,7 +27,7 @@ class EngineServiceHandler(object):
     def Recommend(self, userProfile, topk):
         return EngineManager().Recommend(userProfile, topk)
 
-if __name__ == "__main__":
+def main():
     config = EngineUtils().getConfigParser()
 
     HOST = config.get("server", "host")
@@ -53,3 +54,6 @@ if __name__ == "__main__":
     logging.info("Engine server start run at %s:%s", HOST, PORT)
     server.serve()
     logging.info("Engine server exit ...")
+
+if __name__ == "__main__":
+    main()

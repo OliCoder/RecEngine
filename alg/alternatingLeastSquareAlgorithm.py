@@ -4,17 +4,20 @@ import os
 import sys
 sys.path.append("../")
 from utils import DataSet, EngineUtils
-from pyspark.ml.recommendation import ALS
+from pyspark.ml.recommendation import ALS, ALSModel
 from pyspark.sql import SparkSession
 from engine.ttypes import UserProfile
 
 class AlternatingLeastSquareAlgorithm(object):
-    def __init__(self, modelPath="", maxIter=10, regParam=0.01, implicitPrefs=False):
+    def __init__(self, modelPath="dataset/als_model", maxIter=10, regParam=0.01, implicitPrefs=False, upgradeModel = False):
         # TODO（chenjinghui）：从文件加载模型
+        if os.path.exists(modelPath):
+            self.model = ALSModel.load(modelPath)
+            return
         data = DataSet().getRatingsDataFrame()
         self.model = ALS(maxIter=maxIter, regParam=regParam, implicitPrefs=implicitPrefs, \
                          userCol="userId", itemCol="movieId", ratingCol="rating").fit(data)
-        if modelPath != "":
+        if modelPath != "" and upgradeModel:
             self.model.save(modelPath)
 
     def Predict(self, userId, movieId):

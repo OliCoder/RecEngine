@@ -58,25 +58,51 @@ def main():
     file.close()
 
 def downloadImg(movieId, url):
-	rsp = requests.get(url)
-	img = rsp.content
-	path = "./pic/" + str(movieId) + ".jpg"
-	with open(path, "wb+") as f:
-		f.write(img)
+    rsp = requests.get(url)
+    img = rsp.content
+    path = "./pic/" + str(movieId) + ".jpg"
+    with open(path, "wb+") as f:
+        f.write(img)
+
+def downnloadImgs():
+    linksDataFrane = pd.read_csv("./links.csv", dtype=str)
+    movieIds = list(linksDataFrane["movieId"])
+    imdbIds = list(linksDataFrane["imdbId"])
+    moviesMap = {}
+    for i in range(len(imdbIds)):
+        moviesMap[int(imdbIds[i])] = movieIds[i]
+
+    with open("./imgs-source") as f:
+        for line in f:
+            line = line.strip("\n").split()
+            if int(moviesMap[int(line[0])]) <=3068:
+                continue
+            if len(line) == 2:
+                downloadImg(moviesMap[int(line[0])], line[1])
+
+def fixMissingUrl():
+    cnt = 0
+    succ = 0
+    with open("./fix", "a") as nf:
+        with open("./imgs-source") as f:
+            for line in f:
+                line = line.strip("\n").split()
+                if len(line) != 2:
+                    url = "https://www.imdb.com/title/tt0" + str(line[0]) + '/'
+                    print(url)
+                    rsp = requests.get(url).text
+                    doc = pq(rsp)
+                    imgUrl = doc('.poster a img').attr.src
+                    if imgUrl:
+                        nf.write(str(line[0]) + " " + imgUrl + "\n")
+                        succ += 1
+                    cnt += 1
+                else:
+                    nf.write(str(line[0]) + " " + str(line[1]) + "\n")
+
+    print(cnt, succ)
+
 
 if __name__ == "__main__":
     # main()
-	linksDataFrane = pd.read_csv("./links.csv", dtype=str)
-	movieIds = list(linksDataFrane["movieId"])
-	imdbIds = list(linksDataFrane["imdbId"])
-	moviesMap = {}
-	for i in range(len(imdbIds)):
-		moviesMap[int(imdbIds[i])] = movieIds[i]
-
-	with open("./imgs-source") as f:
-		for line in f:
-			line = line.strip("\n").split()
-			if int(moviesMap[int(line[0])]) <=3068:
-				continue
-			if len(line) == 2:
-				downloadImg(moviesMap[int(line[0])], line[1])
+    fixMissingUrl()
